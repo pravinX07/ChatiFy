@@ -77,10 +77,10 @@ export const signup = async (req, res) => {
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
-  if(!email || !password){
+  if (!email || !password) {
     return res.status(400).json({
-        message:"Email and password are required"
-    })
+      message: "Email and password are required",
+    });
   }
 
   try {
@@ -98,25 +98,47 @@ export const login = async (req, res) => {
       });
     }
 
-    generateToken(user._id,res)
+    generateToken(user._id, res);
 
     res.status(200).json({
-        _id:user._id,
-        fullName:user.fullName,
-        email:user.email,
-        profilePic:user.profilePic
-    })
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      profilePic: user.profilePic,
+    });
   } catch (error) {
-    console.error("Error in login controller", error)
+    console.error("Error in login controller", error);
     res.status(500).json({
-        message:"Internal server error"
-    })
+      message: "Internal server error",
+    });
   }
 };
 
-
-
 export const logout = async (_, res) => {
-   res.cookie("jwt","",{maxAge:0});
-   res.cookie(200).json({message:"Logout successfully"})
+  res.cookie("jwt", "", { maxAge: 0 });
+  res.cookie(200).json({ message: "Logout successfully" });
+};
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { profilePic } = req.body;
+    if (!profilePic)
+      return resizeBy.status(400).json({
+        message: "Profile pic is required",
+      });
+
+    const userId = req.user._id;
+    const uploadResponse = await cloudinary.uploader.upload(profilePic);
+    const uploadUser = await User.findOneAndUpdate(
+      userId,
+      { profilePic: uploadResponse.secure_url },
+      { new: true }
+    );
+    res.status(200).json(uploadUser);
+  } catch (error) {
+    console.log("Error un update profile ", error);
+    res.status(500).json({
+      message: "Internal Server error",
+    });
+  }
 };
