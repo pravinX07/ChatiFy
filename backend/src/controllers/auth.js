@@ -3,7 +3,6 @@ import User from "../models/User.js";
 // import becrypt from "bcryptjs"
 import { generateToken } from "../utils/jwt.js";
 import { sendWelcomeEmail } from "../emails/emailHandlers.js";
-import { use } from "react";
 export const signup = async (req, res) => {
   const { fullName, email, password } = req.body;
 
@@ -33,11 +32,11 @@ export const signup = async (req, res) => {
       });
     }
 
-    const hasedPass = await bcrypt.hash(password, 10);
+    const hashedPass = await bcrypt.hash(password, 10);
     const newUser = new User({
       fullName,
       email,
-      password: hasedPass,
+      password: hashedPass,
     });
 
     if (newUser) {
@@ -59,7 +58,7 @@ export const signup = async (req, res) => {
           process.env.CLIENT_URL
         );
       } catch (error) {
-        console.error("Error to send welcome error");
+        console.error("Error to send welcome error", error);
       }
     } else {
       res.status(400).json({
@@ -69,7 +68,7 @@ export const signup = async (req, res) => {
   } catch (error) {
     console.log("Error in signup route ", error);
     res.status(500).json({
-      message: "Internal server error" + error.message,
+      message: "Internal server error " + error.message,
     });
   }
 };
